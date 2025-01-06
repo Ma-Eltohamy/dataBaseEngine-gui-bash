@@ -1,23 +1,12 @@
 function selectSpecificColumns() {
-  headersString=$1
-  # readarray -t headersArray <<< "$headersString"
-
-  IFS=':' read -r -a headersArray <<< "$headersString"
-  echo "------------------ debugging -----------------"
-  echo "${headersArray[@]}"
-  echo "------------------ debugging -----------------"
-
+  echo "------------ debugging -------------"
   # Create the --checklist options dynamically
-  checklist_options=()
+  local checklist_options=()
   for header in "${headersArray[@]}"; do
     checklist_options+=(FALSE "$header")
   done
 
-  echo "------------------ after debugging -----------------"
-  echo "$headersString"
-  echo "------------------ debugging -----------------"
-
-  specifiedColumns=$(zenity --list --width=300 --height=250  \
+  local specifiedColumns=$(zenity --list --width=300 --height=250  \
     --title="Columns" \
     --text="Choose the Columns you want to select :" \
     --checklist \
@@ -25,33 +14,29 @@ function selectSpecificColumns() {
     --column="Column" \
     "${checklist_options[@]}")
 
-  echo "------------------ debugging -----------------"
-  echo "$specifiedColumns"
-  echo "------------------ debugging -----------------"
-
-
-  if [ -z "$specifiedColumns" ]; then
+  if isEmpty "$specifiedColumns"
+  then
     zenity --error --text="No columns selected. Exiting function."
     return
   fi
 
+  local selectedColumnsArray
   IFS='|' read -r -a selectedColumnsArray <<< "$specifiedColumns"
   
-  awkCommand=""
-  selectedHeaders=""
-  columns=()
+  local awkCommand=""
+  local selectedHeaders=""
+  local selectedColumns=()
 
-
-  echo "------------------ debugging -----------------"
-  echo "${selectedColumnsArray[@]}" # id last name salary
-  echo "------------------ debugging -----------------"
-
-  for ((i = 0; i < ${#headersArray[@]}; ++i)); do
-      for selectedHeader in "${selectedColumnsArray[@]}"; do
-          if [[ "${headersArray[i]}" == "$selectedHeader" ]]; then
-              columns+=(--column="$selectedHeader")
+  for ((i = 0; i < ${#headersArray[@]}; ++i))
+  do
+      for selectedHeader in "${selectedColumnsArray[@]}"
+      do
+          if [[ "${headersArray[$i]}" == "$selectedHeader" ]]
+          then
+              selectedColumns+=(--column="$selectedHeader")
               columnNumber=$((i + 1)) 
-              if [ -z "$awkCommand" ]; then
+              if isEmpty "$awkCommand"
+              then
                   awkCommand="\$$columnNumber"
                   selectedHeaders="$selectedHeader"
               else
@@ -68,19 +53,16 @@ function selectSpecificColumns() {
   while IFS= read -r line; do
     IFS=':' read -r -a row <<< "$line"
     result+=("${row[@]}")
-  done < <(awk -F ":" "{print $awkCommand}" "$dataFile")
+  done <<< "$(awk -F ":" "{print $awkCommand}" "$dataFile")"
 
-  echo "------------------ debugging -----------------"
-  echo "${result[@]}" 
-  echo "------------------ debugging -----------------"
-
-  if [ -z "$result" ]; then
+  if isEmpty "$result"
+  then
     zenity --error --text="No data found for the selected columns."
   else
     zenity --list \
     --title="Table Data" \
     --height=400 --width=600 \
-    "${columns[@]}" \
+    "${selectedColumns[@]}" \
     "${result[@]}"
   fi
 }

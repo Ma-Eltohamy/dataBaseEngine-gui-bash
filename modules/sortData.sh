@@ -1,25 +1,13 @@
 function sortData() {
-  headersString=$1
-
-  IFS=':' read -r -a headersArray <<< "$headersString"
-
-  echo "-------------- debugging --------------"
-  echo "${headersArray[@]}"
-  echo "-------------- debugging --------------"
-
-  optinos=()
-  columns=()
+  local optinos=()
+  local columns=()
   for header in "${headersArray[@]}"
   do
     optinos+=(FALSE "$header")
     columns+=(--column="$header")
   done
 
-  selectedOption=$(zenity --list --radiolist --column="Select" --column="Option" "${optinos[@]}")
-
-  echo "-------------- debugging --------------"
-  echo "$selectedOption"
-  echo "-------------- debugging --------------"
+  local selectedOption=$(zenity --list --radiolist --column="Select" --column="Option" "${optinos[@]}")
 
   columnNumber=-1
 
@@ -31,10 +19,6 @@ function sortData() {
     fi
   done
 
-  echo "-------------- debugging --------------"
-  echo "The column number is: ${columnNumber} sed -n \${$columnNumber}p"
-  echo "-------------- debugging --------------"
-  
 
   if [ -z "$selectedOption" ]; then
     zenity --error --text="Column number cannot be empty."
@@ -42,25 +26,17 @@ function sortData() {
   fi
 
   lineNumber=$((columnNumber + 3))
-  echo "-------------- debugging --------------"
-  echo "The line number is: ${columnNumber} sed -n \${$columnNumber}p"
-  echo "-------------- debugging --------------"
   colDataType=$(sed -n "${lineNumber}p" "$metaFile" | cut -d"(" -f2 | cut -d")" -f1)
-  echo "-------------- debugging --------------"
-  echo "$colDataType"
-  echo "-------------- debugging --------------"
 
   data=()
   if [[ "$colDataType" == "INT" || "$colDataType" == "FLOAT" ]]
   then 
-    echo "---------------- yes yes --------------"
     while IFS= read -r line
     do
       IFS=':' read -r -a row <<< "$line"
       data+=("${row[@]}")
     done <<< $(sort -t":" -n -k"$columnNumber" "$dataFile")
   else
-    echo "---------------- hop hop --------------"
     while IFS= read -r line
     do
       IFS=':' read -r -a row <<< "$line"

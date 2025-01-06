@@ -1,26 +1,27 @@
 function dropTable() {
-    dataBaseName=$1
-
     # Prompt for the table name using Zenity
     tableName=$(zenity --entry --title="Drop Table" --text="Enter the table name to drop:" --entry-text="" --height=150 --width=400)
 
-    if [ -z "$tableName" ]; then
+    if isEmpty "$tableName"
+    then
         zenity --error --title="Error" --text="Table name cannot be empty.\nTip: A valid table name should contain at least one character." --height=150 --width=400
         return
     fi
 
-    if isStartWithChars "$tableName"; then
+    if isStartWithChars "$tableName"
+    then
         zenity --error --title="Error" --text="Table name cannot start with a number or special character.\nTip: Use alphabetic characters or underscores (_) at the beginning." --height=150 --width=400
         return
     fi
 
-    if ! isAlreadyExists -t "$dataBaseName" "$tableName"; then
+    if ! isAlreadyExists -t "$CONNECTED_DB" "$tableName"
+    then
         zenity --error --title="Error" --text="Table '$tableName' does not exist." --height=150 --width=400
         return
     fi
 
-    dataFile="$HOME/DBMS/$dataBaseName/$tableName.data"
-    metaFile="$HOME/DBMS/$dataBaseName/$tableName.meta"
+    local dataFile="$DB_PATH/$CONNECTED_DB/$tableName.data"
+    local metaFile="$DB_PATH/$CONNECTED_DB/$tableName.meta"
 
     # Confirm the deletion action before proceeding
     zenity --question --title="Confirm Deletion" --text="Are you sure you want to permanently delete the table '$tableName'?" --height=150 --width=400

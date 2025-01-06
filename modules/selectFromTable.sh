@@ -1,44 +1,42 @@
 function selectFromTable() {
-  dataBaseName=$1
-
   # Use Zenity to prompt for the table name
-  tableName=$(zenity --entry --title="Enter Table Name" --text="Enter the table name to select data from:")
+  local tableName=$(zenity --entry --title="Enter Table Name" --text="Enter the table name to select data from:")
 
-  if ! isAlreadyExists -t "$dataBaseName" "$tableName"; then
+  if ! isAlreadyExists -t "$CONNECTED_DB" "$tableName"
+  then
     zenity --error --text="Table '$tableName' does not exist."
     return
   fi
 
-  dataFile="$HOME/DBMS/$dataBaseName/$tableName.data"
-  metaFile="$HOME/DBMS/$dataBaseName/$tableName.meta"
+  local dataFile="$DB_PATH/$CONNECTED_DB/$tableName.data"
+  local metaFile="$DB_PATH/$CONNECTED_DB/$tableName.meta"
 
   # Get the primary key (from the 3rd line in the metadata file)
-  primaryKey=$(sed -n '3p' "$metaFile" | xargs)
+  local primaryKey=$(sed -n '3p' "$metaFile" | xargs)
   zenity --info --text="The primary key is: $primaryKey"
 
-  headers=$(sed -n '4,$p' "$metaFile" | cut -d '(' -f1)
+  local headers=$(sed -n '4,$p' "$metaFile" | cut -d '(' -f1)
   # readarray works fine with headers because the output of headers is \n seperated
   # unlike passing "$headers" --> to any other selecting function as parameters not seperated
+  local headersArray
   readarray -t headersArray <<< "$headers"
-  # echo "------------------ debugging -----------------"
-  # echo "${headersArray[@]}"
-  # echo "------------------ debugging -----------------"
-  # maxColumns=${#headersArray[@]} # Count the number of headers
-  headersString=$(IFS=":"; echo "${headersArray[*]}") # headers but seperated by :
+  # local columnsNumber=${#headersArray[@]} # Count the number of headers
+  # local headersString=$(IFS=":"; echo "${headersArray[*]}") # headers but seperated by :
 
-  primaryKeyIndex=-1 
+  local primaryKeyIndex=-1 
   for i in "${!headersArray[@]}"
   do
-    echo "-------------- debugging ---------------"
-    echo "${headersArray[$i]}----------"
-    echo "$primaryKey----------"
-    echo "-------------- debugging ---------------"
-
     if [[ "${headersArray[$i]}" == "$primaryKey " ]]
     then
       primaryKeyIndex=$((i + 1)) 
       break
     fi
+  done
+
+  local columns=()
+  for header in "${headersArray[@]}"
+  do
+    columns+=(--column="$header")
   done
 
   while true; do
@@ -53,23 +51,23 @@ function selectFromTable() {
 
     case $choice in
       "Select all data")
-        selectAllData "$dataFile" "$headersString"
-        break ;;
+        selectAllData 
+        ;;
       "Select specific columns")
-        selectSpecificColumns "$headersString"
-        break ;;
+        selectSpecificColumns
+        ;;
       "Select by primary key")
-        selectByPrimaryKey "$primaryKeyIndex"
-        break ;;
+        selectByPrimaryKey
+        ;;
       "Select by condition")
-        selectByCondition "$headersString"
-        break ;;
+        selectByCondition
+        ;;
       "Sort data")
-        sortData "$headersString"
-        break ;;
+        sortData
+        ;;
       "Exit")
         zenity --info --text="Exiting selection menu."
-        return
+        break
         ;;
       *)
         zenity --error --text="Invalid choice! Please select a valid option."

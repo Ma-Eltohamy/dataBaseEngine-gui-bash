@@ -1,6 +1,4 @@
 function manageDataBase() {
-    dataBaseName=$1
-
     local options=(
         "Create Table"
         "List Tables"
@@ -15,47 +13,46 @@ function manageDataBase() {
     while true
     do
         # Zenity dialog to show options
-        selectedOption=$(zenity --list --title="Manage Database: $dataBaseName" --column="Operations" "${options[@]}" --height=300 --width=400)
+        selectedOption=$(zenity --list --title="Manage Database: $CONNECTED_DB" --column="Operations" "${options[@]}" --height=300 --width=400)
 
-        if [[ -z "$selectedOption" ]]; then
+        if isEmpty "$selectedOption"
+        then
             echo "No operation selected, exiting."
             return 0
         fi
 
         case "$selectedOption" in
             "Create Table")
-                createTable "$dataBaseName"
-                break ;;
+                createTable
+                ;;
 
             "List Tables")
-                listTables "$dataBaseName"
-                break ;;
+                listTables
+                ;;
 
             "Drop Table")
-                dropTable "$dataBaseName"
-                break ;;
+                dropTable
+                ;;
 
             "Insert into Table")
-                insertIntoTable "$dataBaseName"
-                break ;;
+                insertIntoTable
+                ;;
 
             "Select From Table")
-                selectFromTable "$dataBaseName"
-                break ;;
+                selectFromTable
+                ;;
 
             "Delete From Table")
-                deleteFromTable "$dataBaseName"
-                break ;;
+                deleteFromTable
+                ;;
 
             "Update Row")
-                updateRowInTable "$dataBaseName"
-                break ;;
+                updateRowInTable
+                ;;
 
             "Exit")
                 echo "Exiting table operations."
-                return 0
-                ;;
-
+                break ;;
             *)
                 echo "Invalid option, please try again."
                 ;;

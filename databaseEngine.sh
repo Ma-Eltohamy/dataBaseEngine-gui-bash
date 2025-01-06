@@ -2,11 +2,19 @@
 shopt -s extglob
 
 function printMenu() {
-  local -a menu=("$@")
-  local -i menuLen=${#menu[@]}
+  # local -a menu=("$@")
+  # local -i menuLen=${#menu[@]}
 
+  local -a menuElements=(
+    "Create Database"
+    "List Database"
+    "Connect To Database"
+    "Drop Database"
+    "Exit"
+  )
+  
   # Zenity option menu
-  choice=$(zenity --list --title="Database Engine" --column="Options" "${menu[@]}" --height=250)
+  choice=$(zenity --list --title="Database Engine" --column="Options" "${menuElements[@]}" --height=250)
 
   case $choice in 
     "Create Database") 
@@ -28,44 +36,40 @@ function printMenu() {
   esac
 }
 
-function run() {
-  source ./modules/connectToDataBase.sh
-  source ./modules/createDataBase.sh
-  source ./modules/createTable.sh
-  source ./modules/deleteFromTable.sh
-  source ./modules/dropDataBase.sh
-  source ./modules/dropTable.sh
-  source ./modules/insertIntoTable.sh
-  source ./modules/listDataBases.sh
-  source ./modules/listTables.sh
-  source ./modules/manageDataBase.sh
-  source ./modules/selectFromTable.sh
-  source ./modules/selectAllData.sh
-  source ./modules/selectByCondition.sh
-  source ./modules/selectByPrimaryKey.sh
-  source ./modules/selectSpecificColumns.sh
-  source ./modules/sortData.sh
-  source ./modules/updateRowInTable.sh
-  source ./modules/validation.sh
+# Now modulesArray is well known variable in your current running shell
+function loadModules(){
+  echo "loadModules was called successfully."
+  readarray -t modulesArray <<< $(ls ./modules)
 
+  for mod in "${modulesArray[@]}"
+  do
+    echo "$mod has been loaded successfully."
+    source "./modules/$mod"
+  done
+}
+
+
+function run() {
+  # Load the required modules
+  loadModules
 
   # Make sure the directory exists
   if ! isAlreadyExists -m; then
     mkdir -p "$HOME/DBMS"
   fi
 
-  # Menu elements
-  local -a menuElements=(
-    "Create Database"
-    "List Database"
-    "Connect To Database"
-    "Drop Database"
-    "Exit"
-  )
+  # Setting the database variable path
+  DB_PATH="$HOME/DBMS"
+
+  # Load current existing databases at "$DATABASES"
+  loadDataBases
+
+  # Current connected database
+  CONNECTED_DB=""
 
   # Display the menu
   while true; do
-    printMenu "${menuElements[@]}"
+    printMenu
   done
 }
 

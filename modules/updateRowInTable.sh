@@ -1,26 +1,24 @@
 function updateRowInTable() {
-  dataBaseName=$1
-
   # Use Zenity to prompt for the table name
-  tableName=$(zenity --entry --title="Enter Table Name" --text="Enter the table name to update a row in:")
+  local tableName=$(zenity --entry --title="Enter Table Name" --text="Enter the table name to update a row in:")
 
-  if ! isAlreadyExists -t "$dataBaseName" "$tableName"; then
+  if ! isAlreadyExists -t "$CONNECTED_DB" "$tableName"; then
     zenity --error --text="Table '$tableName' does not exist."
     return
   fi
 
-  metaFile="$HOME/DBMS/$dataBaseName/$tableName.meta"
-  dataFile="$HOME/DBMS/$dataBaseName/$tableName.data"
+  local metaFile="$DB_PATH/$CONNECTED_DB/$tableName.meta"
+  local dataFile="$DB_PATH/$CONNECTED_DB/$tableName.data"
 
   # Get the primary key
-  primaryKey=$(sed -n '3p' "$metaFile" | xargs)
+  local primaryKey=$(sed -n '3p' "$metaFile" | xargs)
   zenity --info --text="The primary key is: $primaryKey"
 
   # Use Zenity to prompt for the primary key value to update
-  pkValue=$(zenity --entry --title="Enter Primary Key Value" --text="Enter the value of the primary key to update:")
+  local pkValue=$(zenity --entry --title="Enter Primary Key Value" --text="Enter the value of the primary key to update:")
 
   # Check if the row exists
-  row=$(grep "^$pkValue:" "$dataFile")
+  local row=$(grep "^$pkValue:" "$dataFile")
   if [[ -z "$row" ]]; then
     zenity --error --text="No row found with primary key '$pkValue'."
     return
@@ -29,8 +27,8 @@ function updateRowInTable() {
   zenity --info --text="Row found: $row"
 
   # Get column names and types
-  colNames=()
-  colTypes=()
+  local colNames=()
+  local colTypes=()
   for ((i = 4; i <= $(wc -l < "$metaFile"); i++)); do
     line=$(sed -n "${i}p" "$metaFile")
     colName=$(echo "$line" | cut -d "(" -f 1 | sed 's/^ //;s/ $//')
@@ -41,7 +39,7 @@ function updateRowInTable() {
   done
 
   # Prompt the user for new values using Zenity
-  newRow=()
+  local newRow=()
   IFS=':' read -r -a oldRow <<< "$row"
   for ((i = 0; i < ${#colNames[@]}; i++)); do
     colName="${colNames[i]}"
