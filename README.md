@@ -113,7 +113,7 @@ Contributions are welcome! Please follow these steps:
 4. Submit a pull request.
 
 ## License
-This project is licensed under the MIT License.
+This project is licensed under the GPL License.
 
 ## Acknowledgments
 - [Zenity Documentation](https://help.gnome.org/users/zenity/stable/)
