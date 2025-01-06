@@ -29,24 +29,24 @@ function printMenu() {
 }
 
 function run() {
-  source ./connectToDataBase.sh
-  source ./createDataBase.sh
-  source ./createTable.sh
-  source ./deleteFromTable.sh
-  source ./dropDataBase.sh
-  source ./dropTable.sh
-  source ./insertIntoTable.sh
-  source ./listDataBases.sh
-  source ./listTables.sh
-  source ./manageDataBase.sh
-  source ./selectFromTable.sh
-  source ./selectAllData.sh
-  source ./selectByCondition.sh
-  source ./selectByPrimaryKey.sh
-  source ./selectSpecificColumns.sh
-  source ./sortData.sh
-  source ./updateRowInTable.sh
-  source ./validation.sh
+  source ./modules/connectToDataBase.sh
+  source ./modules/createDataBase.sh
+  source ./modules/createTable.sh
+  source ./modules/deleteFromTable.sh
+  source ./modules/dropDataBase.sh
+  source ./modules/dropTable.sh
+  source ./modules/insertIntoTable.sh
+  source ./modules/listDataBases.sh
+  source ./modules/listTables.sh
+  source ./modules/manageDataBase.sh
+  source ./modules/selectFromTable.sh
+  source ./modules/selectAllData.sh
+  source ./modules/selectByCondition.sh
+  source ./modules/selectByPrimaryKey.sh
+  source ./modules/selectSpecificColumns.sh
+  source ./modules/sortData.sh
+  source ./modules/updateRowInTable.sh
+  source ./modules/validation.sh
 
 
   # Make sure the directory exists
